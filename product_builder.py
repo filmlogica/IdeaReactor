@@ -1,91 +1,97 @@
 import os
-import zipfile
 import json
-import subprocess
+import shutil
 import sys
 from price_engine import calculate_price
+from utils import build_readme, build_faq, build_sample_output
+import py_compile
+import subprocess
 
-def build_product_folder(product_name, script_file, description, faq_content, sample_output, final_price):
-    base_path = os.path.join("products", product_name)
-    os.makedirs(os.path.join(base_path, "screenshots"), exist_ok=True)
+def build_product(product_name):
+    print(f"\n🛠️ [Product Builder] Starting build for: {product_name}")
 
-    print(f"📂 [Build] Creating folder: {base_path}")
-
-    # Write the script file
-    script_path = os.path.join(base_path, f"{product_name}.py")
-    with open(script_path, "w") as f:
-        f.write(script_file)
-    print(f"📜 [Script] Written to: {script_path}")
-
-    # Create README
-    with open(os.path.join(base_path, "README.md"), "w") as f:
-        f.write(f"# {product_name}\n\n{description}\n\n## How to Use\n- Double-click the .exe\n- Follow prompts")
-    print("📝 [README] Created")
-
-    # Create FAQ
-    with open(os.path.join(base_path, "FAQ.md"), "w") as f:
-        f.write(faq_content)
-    print("❓ [FAQ] Created")
-
-    # Create sample output
-    with open(os.path.join(base_path, "output_sample.txt"), "w") as f:
-        f.write(sample_output)
-    print("📄 [Sample Output] Created")
-
-    # Save price
-    with open(os.path.join(base_path, "price.txt"), "w") as f:
-        f.write(f"${final_price}")
-    print(f"💰 [Price] Saved: ${final_price}")
-
-    # Compile the script into a .exe
-    print("🔨 [Compile] Converting script to .exe...")
-    subprocess.run([
-        "pyinstaller", "--onefile", "--distpath", base_path,
-        "--workpath", "build", "--specpath", "build", script_path
-    ], check=True)
-    print("✅ [Compile] .exe created")
-
-    # Clean up spec file if it exists
-    spec_path = os.path.join("build", f"{product_name}.spec")
-    if os.path.exists(spec_path):
-        os.remove(spec_path)
-        print("🧹 [Clean] .spec file removed")
-
-    # Remove original .py script
-    if os.path.exists(script_path):
-        os.remove(script_path)
-        print("🧹 [Clean] Original .py file removed")
-
-    # Zip the folder
-    zip_name = os.path.join("products", f"{product_name}.zip")
-    with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, _, files in os.walk(base_path):
-            for file in files:
-                full_path = os.path.join(root, file)
-                zipf.write(full_path, os.path.relpath(full_path, base_path))
-    print(f"📦 [ZIP] Product archived: {zip_name}")
-
-    return zip_name
-
-# --- Script Entry ---
-if __name__ == "__main__":
-    prompt = sys.argv[1] if len(sys.argv) > 1 else "Generate a product"
-    product_name = sys.argv[2] if len(sys.argv) > 2 else "AI_Product"
-
-    print("🛠️ [Product Builder] Starting build process...")
-
+    # Load trend info
     with open("trend.json", "r") as f:
         trend = json.load(f)
 
-    complexity = "moderate"
-    price = calculate_price(trend["score"], complexity)
+    topic = trend['topic']
+    reason = trend['reason']
+    score = float(trend['score'])
+    complexity = trend.get('complexity', 'moderate')
 
-    script = f"print('This script is based on the trend: {trend['topic']}')"
-    desc = f"This script was generated based on the trending topic: {trend['topic']}.\nReason: {trend['reason']}"
-    faq = f"# FAQ\n\n**Q: What is this?**\nA: A script auto-generated based on \"{trend['topic']}\".\n\n**Q: How do I run it?**\nA: Just double-click the .exe inside the ZIP."
-    sample_output = f"This tool is based on {trend['topic']}. It performs X functionality and can be customized easily."
+    # Calculate price
+    print("\n🧮 [Pricing Engine] Calculating price...")
+    price = calculate_price(score, complexity)
+    print(f"💰 Final Price: ${price:.2f}")
 
-    zipfile = build_product_folder(product_name, script, desc, faq, sample_output, price)
+    # Create product folder
+    product_dir = os.path.join("products", product_name)
+    os.makedirs(product_dir, exist_ok=True)
+    print(f"📂 [Directory] Created at {product_dir}")
 
-    print(f"🚀 [Build Complete] Product ready and zipped at: {zipfile}")
+    # Create the Python script (core product)
+    script_path = os.path.join(product_dir, f"{product_name}.py")
+    with open(script_path, "w") as f:
+        f.write(f"# Auto-generated script for: {topic}\n")
+        f.write("# Summary:\n")
+        f.write(f"# {reason}\n\n")
+        f.write("print('This script addresses a trending market problem using automation.')\n")
 
+    print(f"📜 [Script] Written to: {script_path}")
+
+    # Compile to EXE using PyInstaller
+    print("🔨 [Compile] Converting script to executable (.exe)...")
+    subprocess.run([
+        "pyinstaller", "--onefile", "--distpath", product_dir,
+        "--workpath", "build", "--specpath", "build",
+        script_path
+    ], check=True)
+
+    # Remove the raw script and spec
+    os.remove(script_path)
+    shutil.rmtree("build", ignore_errors=True)
+    spec_file = f"{product_name}.spec"
+    if os.path.exists(spec_file):
+        os.remove(spec_file)
+    print("🧹 [Cleanup] Raw files removed.")
+
+    # Build supporting files
+    build_readme(product_dir, topic, reason)
+    build_faq(product_dir, topic)
+    build_sample_output(product_dir, topic)
+
+    # Save price info
+    with open(os.path.join(product_dir, "price.txt"), "w") as f:
+        f.write(str(price))
+
+    # Zip the product folder
+    zip_path = shutil.make_archive(product_dir, 'zip', product_dir)
+    print(f"📦 [ZIP] Created: {zip_path}")
+
+    # Display file sizes
+    print("\n📊 [File Sizes]")
+    for root, dirs, files in os.walk(product_dir):
+        for file in files:
+            file_path = os.path.join(root, file)
+            size_kb = os.path.getsize(file_path) / 1024
+            print(f" - {file}: {size_kb:.2f} KB")
+
+    # Display product preview
+    print("\n🖼️ [Product Preview]")
+    readme_path = os.path.join(product_dir, "README.md")
+    if os.path.exists(readme_path):
+        with open(readme_path, "r") as f:
+            preview = f.read(500)
+            print(preview)
+            if len(preview) == 500:
+                print("... [truncated]")
+    else:
+        print("No README.md found.")
+
+    print("\n✅ [Build Complete] Your digital product is ready!\n")
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("❌ [Error] Please provide a product name.")
+        sys.exit(1)
+    build_product(sys.argv[1])
