@@ -1,152 +1,70 @@
+import json, os, time
 import requests
 from bs4 import BeautifulSoup
-import feedparser
-import json
-import time
-import logging
+from mistral_connector import generate_with_mistral
+from dotenv import load_dotenv
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+load_dotenv()
 
-def fetch_reddit_trends():
-    logging.info("Fetching Reddit trends...")
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        url = 'https://www.reddit.com/r/popular/.json'
-        response = requests.get(url, headers=headers)
-        data = response.json()
-        trends = [post['data']['title'] for post in data['data']['children']]
-        return trends
-    except Exception as e:
-        logging.error(f"Reddit fetch error: {e}")
-        return []
+def fetch_google_trends():
+    url = "https://trends.google.com/trends/trendingsearches/daily/rss?geo=US"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, features="xml")
+    return [item.title.text for item in soup.find_all("item")]
 
-def fetch_twitter_trends():
-    logging.info("Fetching Twitter trends...")
-    try:
-        # Placeholder for Twitter trends fetching logic
-        # Implement using Twitter API or scraping as per your setup
-        trends = ["#ExampleTrend1", "#ExampleTrend2"]
-        return trends
-    except Exception as e:
-        logging.error(f"Twitter fetch error: {e}")
-        return []
+def fetch_amazon_best_sellers():
+    url = "https://www.amazon.com/Best-Sellers/zgbs"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, "html.parser")
+    return [tag.text.strip() for tag in soup.select("div.p13n-sc-truncate-desktop-type2")][:10]
 
-def fetch_youtube_trends():
-    logging.info("Fetching YouTube trends...")
-    try:
-        # Placeholder for YouTube trends fetching logic
-        # Implement using YouTube Data API or scraping as per your setup
-        trends = ["YouTube Trend 1", "YouTube Trend 2"]
-        return trends
-    except Exception as e:
-        logging.error(f"YouTube fetch error: {e}")
-        return []
+def fetch_techcrunch_rss():
+    url = "https://techcrunch.com/tag/rss/"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, features="xml")
+    return [item.title.text for item in soup.find_all("item")]
 
 def fetch_producthunt_trends():
-    logging.info("Fetching Product Hunt trends...")
-    try:
-        url = 'https://www.producthunt.com/feed'
-        feed = feedparser.parse(url)
-        trends = [entry.title for entry in feed.entries]
-        return trends
-    except Exception as e:
-        logging.error(f"Product Hunt fetch error: {e}")
-        return []
+    # Placeholder
+    return ["AI meeting tools", "no-code GPT apps", "autonomous agents"]
 
-def fetch_github_trends():
-    logging.info("Fetching GitHub trends...")
-    try:
-        url = 'https://github.com/trending'
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        repo_tags = soup.find_all('h1', {'class': 'h3 lh-condensed'})
-        trends = [tag.text.strip().replace('\n', '').replace(' ', '') for tag in repo_tags]
-        return trends
-    except Exception as e:
-        logging.error(f"GitHub fetch error: {e}")
-        return []
+def gather_trends():
+    print("📊 [Trend Scraper] Gathering global trends...")
 
-def fetch_amazon_trends():
-    logging.info("Fetching Amazon Best Sellers...")
-    try:
-        url = 'https://www.amazon.com/Best-Sellers/zgbs'
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        titles = soup.select('div.p13n-sc-truncate')
-        trends = [title.get_text(strip=True) for title in titles]
-        return trends
-    except Exception as e:
-        logging.error(f"Amazon fetch error: {e}")
-        return []
+    sources = {
+        "Google Trends": fetch_google_trends(),
+        "Amazon Best Sellers": fetch_amazon_best_sellers(),
+        "TechCrunch": fetch_techcrunch_rss(),
+        "ProductHunt": fetch_producthunt_trends()
+    }
 
-def fetch_linkedin_trends():
-    logging.info("Fetching LinkedIn trends...")
-    try:
-        # Placeholder for LinkedIn trends fetching logic
-        # Implement using LinkedIn API or scraping as per your setup
-        trends = ["LinkedIn Trend 1", "LinkedIn Trend 2"]
-        return trends
-    except Exception as e:
-        logging.error(f"LinkedIn fetch error: {e}")
-        return []
-
-def fetch_etsy_trends():
-    logging.info("Fetching Etsy trends...")
-    try:
-        url = 'https://www.etsy.com/trending-items'
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        titles = soup.find_all('h3', {'class': 'text-gray text-truncate mb-xs-0 text-body'})
-        trends = [title.get_text(strip=True) for title in titles]
-        return trends
-    except Exception as e:
-        logging.error(f"Etsy fetch error: {e}")
-        return []
-
-def fetch_techcrunch_trends():
-    logging.info("Fetching TechCrunch trends...")
-    try:
-        url = 'https://techcrunch.com/feed/'
-        feed = feedparser.parse(url)
-        trends = [entry.title for entry in feed.entries]
-        return trends
-    except Exception as e:
-        logging.error(f"TechCrunch fetch error: {e}")
-        return []
-
-def fetch_quora_trends():
-    logging.info("Fetching Quora trends...")
-    try:
-        # Placeholder for Quora trends fetching logic
-        # Implement using Quora API or scraping as per your setup
-        trends = ["Quora Trend 1", "Quora Trend 2"]
-        return trends
-    except Exception as e:
-        logging.error(f"Quora fetch error: {e}")
-        return []
-
-def aggregate_trends():
     all_trends = []
-    all_trends.extend(fetch_reddit_trends())
-    all_trends.extend(fetch_twitter_trends())
-    all_trends.extend(fetch_youtube_trends())
-    all_trends.extend(fetch_producthunt_trends())
-    all_trends.extend(fetch_github_trends())
-    all_trends.extend(fetch_amazon_trends())
-    all_trends.extend(fetch_linkedin_trends())
-    all_trends.extend(fetch_etsy_trends())
-    all_trends.extend(fetch_techcrunch_trends())
-    all_trends.extend(fetch_quora_trends())
-    unique_trends = list(set(all_trends))
-    logging.info(f"Total unique trends fetched: {len(unique_trends)}")
-    return unique_trends
+    for name, trends in sources.items():
+        print(f"🔍 {name}: {len(trends)} items found")
+        all_trends.extend(trends)
+
+    return all_trends
+
+def find_hot_trend(trends):
+    prompt = f"From this list of trends, which one represents the best opportunity for a high-priced digital product targeting wealthy professionals? Return only one:\n\n{trends}"
+    response = generate_with_mistral(prompt)
+    return response.strip()
+
+def main():
+    print("📈 [Trend Scanner] Analyzing the market...")
+    trends = gather_trends()
+    time.sleep(1)
+    top_trend = find_hot_trend(trends)
+    data = {
+        "top_trend": top_trend,
+        "all_trends": trends
+    }
+
+    with open("trend.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+    print(f"\n🔥 [Top Global Trend Identified]\n   ↳ {top_trend}\n✅ [Saved] trend.json updated.")
 
 if __name__ == "__main__":
-    trends = aggregate_trends()
-    for trend in trends:
-        print(trend)
-
+    main()
