@@ -1,1 +1,26 @@
-
+services:
+  - type: web
+    name: IdeaReactor
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run_pipeline.py
+    autoDeploy: true
+    branch: main
+    runtime: python
+    envVars:
+      - key: MISTRAL_API_URL
+        fromEnvVar: MISTRAL_API_URL
+      - key: SHOPIFY_STORE
+        fromEnvVar: SHOPIFY_STORE
+      - key: SHOPIFY_API_KEY
+        fromEnvVar: SHOPIFY_API_KEY
+      - key: SHOPIFY_PASSWORD
+        fromEnvVar: SHOPIFY_PASSWORD
+      - key: POLYGON_API_KEY
+        fromEnvVar: POLYGON_API_KEY
+      - key: PRODUCT_HUNT_API_KEY
+        fromEnvVar: PRODUCT_HUNT_API_KEY
+      - key: PRODUCT_HUNT_API_SECRET
+        fromEnvVar: PRODUCT_HUNT_API_SECRET
