@@ -1,0 +1,16 @@
+gunicorn
+requests
+beautifulsoup4
+fake_useragent
+googlesearch-python
+apify-client
+ollama
+yagmail
+python-dotenv
+imapclient
+pandas
+matplotlib
+schedule
+selenium
+playwright
+undetected-chromedriver
