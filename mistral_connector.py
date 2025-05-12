@@ -7,7 +7,7 @@ load_dotenv()
 
 MISTRAL_API_URL = os.getenv("MISTRAL_API_URL")
 
-def query_mistral(prompt, temperature=0.7, max_tokens=300):
+def generate_with_mistral(prompt, temperature=0.7, max_tokens=300):
     if not MISTRAL_API_URL:
         raise ValueError("MISTRAL_API_URL not set in .env file")
 
