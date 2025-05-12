@@ -1,26 +1,26 @@
-# mistral_connector.py
-import requests
 import os
+import requests
+from dotenv import load_dotenv
 
-MISTRAL_URL = f"http://localhost:{os.getenv('PORT', '11434')}/api/generate"
-MODEL = os.getenv("MISTRAL_MODEL", "mistral")
-OLLAMA_PATH = os.getenv("OLLAMA_PATH", "ollama")
+# Load environment variables
+load_dotenv()
 
-def generate_from_mistral(prompt):
-    print(f"🧠 [Mistral] Sending prompt to model '{MODEL}':\n{prompt}\n")
+MISTRAL_API_URL = os.getenv("MISTRAL_API_URL")
+
+def query_mistral(prompt, temperature=0.7, max_tokens=300):
+    if not MISTRAL_API_URL:
+        raise ValueError("MISTRAL_API_URL not set in .env file")
 
     payload = {
-        "model": MODEL,
         "prompt": prompt,
-        "stream": False
+        "temperature": temperature,
+        "max_tokens": max_tokens
     }
 
     try:
-        response = requests.post(MISTRAL_URL, json=payload)
+        response = requests.post(f"{MISTRAL_API_URL}/v1/completions", json=payload)
         response.raise_for_status()
-        result = response.json()
-        print(f"🧠 [Mistral] Response received.")
-        return result.get("response", "❌ No response from Mistral.")
-    except requests.RequestException as e:
-        print(f"❌ [Mistral] Connection failed: {e}")
-        return "❌ Mistral API unreachable."
+        return response.json().get("completion", "").strip()
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Mistral API request failed: {e}")
+        return None
