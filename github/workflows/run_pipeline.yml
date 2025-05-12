@@ -1,0 +1,36 @@
+name: Run IdeaReactor Pipeline
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"  # Runs every 15 minutes — adjust as needed
+  workflow_dispatch:        # Allows manual triggering from GitHub
+
+jobs:
+  run-ideareactor:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run pipeline
+      env:
+        MISTRAL_API_URL: ${{ secrets.MISTRAL_API_URL }}
+        SHOPIFY_STORE: ${{ secrets.SHOPIFY_STORE }}
+        SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
+        SHOPIFY_PASSWORD: ${{ secrets.SHOPIFY_PASSWORD }}
+        POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
+        PRODUCT_HUNT_CLIENT_ID: ${{ secrets.PRODUCT_HUNT_CLIENT_ID }}
+        PRODUCT_HUNT_CLIENT_SECRET: ${{ secrets.PRODUCT_HUNT_CLIENT_SECRET }}
+      run: |
+        python run_pipeline.py
