@@ -6,11 +6,9 @@ import trends_scraper
 
 def main():
     print("🧠 [IdeaReactor] Starting full automation sequence...")
-    def run_trends_scraper():
-    trends_scraper.main()
 
     # Step 1: Update trends
-    trends_scraper.update_trends()
+    trends_scraper.main()
 
     # Step 2: Read trend data
     with open("trend.json", "r") as f:
