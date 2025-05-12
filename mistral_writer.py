@@ -2,7 +2,7 @@ import requests
 import json
 
 # Configure the local Mistral server (adjust if needed)
-MISTRAL_URL = "http://localhost:11434/api/generate"
+MISTRAL_API_URL = "http://localhost:11434/api/generate"
 
 # Define the prompt you'd like Mistral to complete
 prompt = "Write a premium product description for a digital AI investing toolkit targeting high-net-worth individuals."
