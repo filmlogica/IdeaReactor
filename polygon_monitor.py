@@ -6,7 +6,7 @@ from datetime import datetime
 POLYGON_API_KEY = os.getenv('POLYGON_API_KEY')
 SHOPIFY_API_KEY = os.getenv('SHOPIFY_API_KEY')
 SHOPIFY_PASSWORD = os.getenv('SHOPIFY_PASSWORD')
-SHOPIFY_STORE_NAME = os.getenv('SHOPIFY_STORE_NAME')
+SHOPIFY_STORE_NAME = os.getenv('SHOPIFY_STORE')
 
 # Define the list of stock symbols to monitor
 STOCK_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'SHOP']
