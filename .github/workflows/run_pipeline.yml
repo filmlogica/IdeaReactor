@@ -1,0 +1,31 @@
+name: Run IdeaReactor Pipeline
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+  workflow_dispatch:
+
+jobs:
+  run-ideareactor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Pipeline
+        env:
+          # Add your environment variables here (if needed)
+          MISTRAL_API_URL: ${{ secrets.MISTRAL_API_URL }}
+        run: |
+          python run_pipeline.py
