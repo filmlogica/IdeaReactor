@@ -3,19 +3,20 @@ name: Run IdeaReactor Pipeline
 on:
   schedule:
     - cron: '0 * * * *'  # Runs every hour (UTC)
-  workflow_dispatch:     # Optional: allows manual run from GitHub UI
+  workflow_dispatch:     # Allows manual triggering from GitHub UI
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.12
+        python-version: '3.12'
 
     - name: Install dependencies
       run: |
