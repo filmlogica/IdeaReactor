@@ -1,26 +1,39 @@
 services:
   - type: web
-    name: IdeaReactor
-    env: python
-    region: oregon
-    plan: free
+    name: ideareactor
+    runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: python run_pipeline.py
-    autoDeploy: true
-    branch: main
-    runtime: python
     envVars:
-      - key: MISTRAL_API_URL
-        fromEnvVar: MISTRAL_API_URL
+      - key: GUMROAD_ACCESS_TOKEN
+        sync: true
+      - key: KOFI_VERIFICATION_TOKEN
+        sync: true
+      - key: EMAIL_USER
+        sync: true
+      - key: EMAIL_PASS
+        sync: true
+      - key: GUMROAD_EMAIL
+        sync: true
+      - key: GUMROAD_PASSWORD
+        sync: true
       - key: SHOPIFY_STORE
-        fromEnvVar: SHOPIFY_STORE
+        sync: true
       - key: SHOPIFY_API_KEY
-        fromEnvVar: SHOPIFY_API_KEY
+        sync: true
       - key: SHOPIFY_PASSWORD
-        fromEnvVar: SHOPIFY_PASSWORD
-      - key: POLYGON_API_KEY
-        fromEnvVar: POLYGON_API_KEY
-      - key: PRODUCT_HUNT_API_KEY
-        fromEnvVar: PRODUCT_HUNT_API_KEY
+        sync: true
+      - key: PRODUCT_HUNT_CLIENT_ID
+        sync: true
       - key: PRODUCT_HUNT_API_SECRET
-        fromEnvVar: PRODUCT_HUNT_API_SECRET
+        sync: true
+      - key: PRODUCT_HUNT_REDIRECT_URI
+        sync: true
+      - key: YOUTUBE_API_KEY
+        sync: true
+      - key: TECHCRUNCH_RSS_URL
+        sync: true
+      - key: POLYGON_API_KEY
+        sync: true
+      - key: MISTRAL_API_URL
+        sync: true
