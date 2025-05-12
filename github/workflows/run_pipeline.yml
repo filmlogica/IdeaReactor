@@ -2,44 +2,33 @@ name: Run IdeaReactor Pipeline
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs every hour
-  workflow_dispatch:
+    - cron: '0 * * * *'  # Runs every hour (UTC)
+  workflow_dispatch:     # Optional: allows manual run from GitHub UI
 
 jobs:
-  run-pipeline:
+  run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.12
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Run pipeline
-        env:
-          GUMROAD_ACCESS_TOKEN: ${{ secrets.GUMROAD_ACCESS_TOKEN }}
-          KOFI_VERIFICATION_TOKEN: ${{ secrets.KOFI_VERIFICATION_TOKEN }}
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          GUMROAD_EMAIL: ${{ secrets.GUMROAD_EMAIL }}
-          GUMROAD_PASSWORD: ${{ secrets.GUMROAD_PASSWORD }}
-          SHOPIFY_STORE: ${{ secrets.SHOPIFY_STORE }}
-          SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
-          SHOPIFY_PASSWORD: ${{ secrets.SHOPIFY_PASSWORD }}
-          PRODUCT_HUNT_CLIENT_ID: ${{ secrets.PRODUCT_HUNT_CLIENT_ID }}
-          PRODUCT_HUNT_API_SECRET: ${{ secrets.PRODUCT_HUNT_API_SECRET }}
-          PRODUCT_HUNT_REDIRECT_URI: ${{ secrets.PRODUCT_HUNT_REDIRECT_URI }}
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
-          MISTRAL_API_URL: ${{ secrets.MISTRAL_API_URL }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TECHCRUNCH_RSS_URL: ${{ secrets.TECHCRUNCH_RSS_URL }}
-        run: python run_pipeline.py
+    - name: Run pipeline
+      env:
+        MISTRAL_API_URL: ${{ secrets.MISTRAL_API_URL }}
+        SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
+        SHOPIFY_PASSWORD: ${{ secrets.SHOPIFY_PASSWORD }}
+        SHOPIFY_STORE: ${{ secrets.SHOPIFY_STORE }}
+        POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
+        # Add other secrets as needed
+      run: |
+        python run_pipeline.py
