@@ -4,7 +4,7 @@ import subprocess
 from datetime import datetime
 
 # Settings
-STOCK_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NFLX', 'NVDA']
+STOCK_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'TSLA', 'CRM', 'INTC', 'ORCL', 'SAP', 'ADBE', 'AVGO', 'IBM', 'SHOP']
 DROP_THRESHOLD = 3.0  # Percent drop to trigger product generation
 CHECK_INTERVAL = 3600  # Seconds (1 hour)
 
