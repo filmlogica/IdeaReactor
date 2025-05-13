@@ -1,12 +1,12 @@
 services:
   - type: web
-    name: ideareactor
+    name: ideareactor-web
     runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python run_pipeline.py
+    buildCommand: |
+      pip install -r requirements.txt
+      playwright install
+    startCommand: gunicorn kofi_webhook:app
     envVars:
-      - key: GUMROAD_ACCESS_TOKEN
-        sync: true
       - key: KOFI_VERIFICATION_TOKEN
         sync: true
       - key: EMAIL_USER
@@ -22,6 +22,15 @@ services:
       - key: SHOPIFY_API_KEY
         sync: true
       - key: SHOPIFY_PASSWORD
+        sync: true
+
+  - type: worker
+    name: ideareactor-worker
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run_pipeline.py
+    envVars:
+      - key: GUMROAD_ACCESS_TOKEN
         sync: true
       - key: PRODUCT_HUNT_CLIENT_ID
         sync: true
