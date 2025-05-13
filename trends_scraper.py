@@ -1,74 +1,59 @@
-import json, os, time
+import os
 import requests
-from bs4 import BeautifulSoup
+import feedparser
 from mistral_connector import generate_with_mistral
-from dotenv import load_dotenv
-
-load_dotenv()
 
 def fetch_google_trends():
-    url = "https://trends.google.com/trends/trendingsearches/daily/rss?geo=US"
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, features="xml")
-    return [item.title.text for item in soup.find_all("item")]
+    print("🔍 Google Trends: Checking RSS feed...")
+    url = 'https://trends.google.com/trends/trendingsearches/daily/rss?geo=US'
+    feed = feedparser.parse(url)
+    return [entry.title for entry in feed.entries]
 
 def fetch_amazon_best_sellers():
-    url = "https://www.amazon.com/Best-Sellers/zgbs"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.content, "html.parser")
-    return [tag.text.strip() for tag in soup.select("div.p13n-sc-truncate-desktop-type2")][:10]
+    print("🔍 Amazon Best Sellers: Checking page...")
+    return []  # Placeholder for future scraping logic
 
-def fetch_techcrunch_rss():
-    url = "https://techcrunch.com/tag/rss/"
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, features="xml")
-    return [item.title.text for item in soup.find_all("item")]
+def fetch_techcrunch():
+    print("🔍 TechCrunch: Checking RSS feed...")
+    url = 'https://techcrunch.com/tag/rss/'
+    feed = feedparser.parse(url)
+    return [entry.title for entry in feed.entries]
 
-def fetch_producthunt_trends():
-    # Placeholder
-    return ["AI meeting tools", "no-code GPT apps", "autonomous agents"]
+def fetch_producthunt():
+    print("🔍 ProductHunt: Checking RSS feed...")
+    url = 'https://www.producthunt.com/feed'
+    feed = feedparser.parse(url)
+    return [entry.title for entry in feed.entries]
 
-def gather_trends():
-    print("📊 [Trend Scraper] Gathering global trends...")
-
-    sources = {
-        "Google Trends": fetch_google_trends(),
-        "Amazon Best Sellers": fetch_amazon_best_sellers(),
-        "TechCrunch": fetch_techcrunch_rss(),
-        "ProductHunt": fetch_producthunt_trends()
-    }
-
-    all_trends = []
-    for name, trends in sources.items():
-        print(f"🔍 {name}: {len(trends)} items found")
-        all_trends.extend(trends)
-
-    return all_trends
+def gather_all_trends():
+    return (
+        fetch_google_trends() +
+        fetch_amazon_best_sellers() +
+        fetch_techcrunch() +
+        fetch_producthunt()
+    )
 
 def find_hot_trend(trends):
-    if top_trend is not None:
-        top_trend = top_trend.strip()
-    else:
-        top_trend = "Default Trend"
     prompt = f"From this list of trends, which one represents the best opportunity for a high-priced digital product targeting wealthy professionals? Return only one:\n\n{trends}"
     response = generate_with_mistral(prompt)
-    return response.strip()
+
+    if response:
+        return response.strip()
+    else:
+        print("⚠️ Mistral API returned no result. Using fallback trend.")
+        return "Premium Financial Tools"
 
 def main():
     print("📈 [Trend Scanner] Analyzing the market...")
-    trends = gather_trends()
-    time.sleep(1)
+    print("📊 [Trend Scraper] Gathering global trends...")
+    trends = gather_all_trends()
+    print(f"🌍 Total trends gathered: {len(trends)}")
+
     top_trend = find_hot_trend(trends)
-    data = {
-        "top_trend": top_trend,
-        "all_trends": trends
-    }
 
     with open("trend.json", "w") as f:
-        json.dump(data, f, indent=4)
-
-    print(f"\n🔥 [Top Global Trend Identified]\n   ↳ {top_trend}\n✅ [Saved] trend.json updated.")
+        f.write(f'{{"top_trend": "{top_trend}"}}')
+    print(f"🔥 Top trend identified and saved: {top_trend}")
 
 if __name__ == "__main__":
     main()
