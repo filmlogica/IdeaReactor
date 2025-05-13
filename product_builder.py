@@ -44,11 +44,26 @@ import platform
 # Compile to EXE only if on Windows
 if platform.system() == "Windows":
     print("🔨 [Compile] Converting script to executable (.exe)...")
+    import platform
+
+# Compile to EXE only if on Windows
+if platform.system() == "Windows":
+    print("🔨 [Compile] Converting script to executable (.exe)...")
     subprocess.run([
         "pyinstaller", "--onefile", "--distpath", product_dir,
         "--workpath", "build", "--specpath", "build",
         script_path
     ], check=True)
+
+    # Cleanup Windows build
+    os.remove(script_path)
+    shutil.rmtree("build", ignore_errors=True)
+    spec_file = f"{product_name}.spec"
+    if os.path.exists(spec_file):
+        os.remove(spec_file)
+    print("🧹 [Cleanup] Windows raw files removed.")
+else:
+    print("⚠️ Skipping EXE creation — not on Windows.")
 
     # Cleanup Windows build
     os.remove(script_path)
