@@ -47,6 +47,10 @@ def gather_trends():
     return all_trends
 
 def find_hot_trend(trends):
+    if top_trend is not None:
+        top_trend = top_trend.strip()
+    else:
+        top_trend = "Default Trend"
     prompt = f"From this list of trends, which one represents the best opportunity for a high-priced digital product targeting wealthy professionals? Return only one:\n\n{trends}"
     response = generate_with_mistral(prompt)
     return response.strip()
