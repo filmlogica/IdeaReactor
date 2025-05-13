@@ -39,13 +39,26 @@ def build_product(product_name):
 
     print(f"📜 [Script] Written to: {script_path}")
 
-    # Compile to EXE using PyInstaller
+import platform
+
+# Compile to EXE only if on Windows
+if platform.system() == "Windows":
     print("🔨 [Compile] Converting script to executable (.exe)...")
     subprocess.run([
         "pyinstaller", "--onefile", "--distpath", product_dir,
         "--workpath", "build", "--specpath", "build",
         script_path
     ], check=True)
+
+    # Cleanup Windows build
+    os.remove(script_path)
+    shutil.rmtree("build", ignore_errors=True)
+    spec_file = f"{product_name}.spec"
+    if os.path.exists(spec_file):
+        os.remove(spec_file)
+    print("🧹 [Cleanup] Windows raw files removed.")
+else:
+    print("⚠️ Skipping EXE creation — not on Windows.")
 
     # Remove the raw script and spec
     os.remove(script_path)
