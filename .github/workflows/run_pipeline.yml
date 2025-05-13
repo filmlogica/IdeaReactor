@@ -25,7 +25,9 @@ jobs:
 
       - name: Run Pipeline
         env:
-          # Add your environment variables here (if needed)
           MISTRAL_API_URL: ${{ secrets.MISTRAL_API_URL }}
+          SHOPIFY_STORE: ${{ secrets.SHOPIFY_STORE }}
+          SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
+          SHOPIFY_PASSWORD: ${{ secrets.SHOPIFY_PASSWORD }}
         run: |
           python run_pipeline.py
