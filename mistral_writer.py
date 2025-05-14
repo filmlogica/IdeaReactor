@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import sys
 
 # Load URL from env or use default Render server
 MISTRAL_API_URL = os.getenv("MISTRAL_API_URL", "https://mistral-api-server-p6ho.onrender.com/api/generate")
@@ -27,6 +28,7 @@ def generate_description(topic, product_name):
         print(description)
 
         # Save description to product file
+        os.makedirs("products", exist_ok=True)
         filepath = f"products/{product_name}.json"
         if os.path.exists(filepath):
             with open(filepath, "r+") as f:
@@ -43,3 +45,9 @@ def generate_description(topic, product_name):
         print(f"❌ [Error] Could not connect to Mistral server: {e}")
     except json.JSONDecodeError:
         print("❌ [Error] Invalid JSON response from Mistral.")
+
+if __name__ == "__main__":
+    if len(sys.argv) >= 3:
+        generate_description(sys.argv[1], sys.argv[2])
+    else:
+        print("Usage: python mistral_writer.py <topic> <product_name>")
