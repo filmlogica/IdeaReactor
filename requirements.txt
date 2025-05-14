@@ -17,3 +17,4 @@ undetected-chromedriver
 yfinance
 feedparser
 flask
+certifi
