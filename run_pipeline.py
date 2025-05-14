@@ -1,67 +1,41 @@
-import json
 import subprocess
 import os
+import json
 from datetime import datetime
-import trends_scraper
-import mistral_writer
-import price_engine
+
+os.makedirs("logs", exist_ok=True)
+
+def log(msg):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry = f"[{timestamp}] {msg}"
+    print(entry)
+    with open("logs/pipeline_log.txt", "a") as f:
+        f.write(entry + "\n")
 
 def main():
-    print("[IdeaReactor] Starting full automation sequence...")
+    log("🧠 Starting IdeaReactor automation pipeline...")
 
-    # Step 1: Scrape Trends
-    trends_scraper.main()
+    try:
+        subprocess.run(["python", "trend_scraper.py"], check=True)
+        with open("trend.json", "r") as f:
+            trend = json.load(f)
+        topic = trend.get("topic", "AI Automation Tools")
+        reason = trend.get("reason", "AI-generated product relevance")
+        score = trend.get("score", 70)
+    except Exception as e:
+        log(f"⚠️ Failed to load trend.json, using fallback trend: {e}")
+        topic = "Fallback Trend"
+        reason = "No trend file found"
+        score = 50
 
-    # Step 2: Load trending topic
-    with open("trend.json", "r") as f:
-        trend = json.load(f)
+    log(f"🔥 Top trend identified and saved: {topic}")
 
-    topic = trend['topic']
-    reason = trend['reason']
-    score = trend['score']
-    print(f"""
-[Top Trend Identified]
-   Topic : {topic}
-   Reason: {reason}
-   Score : {score}
-""")
-
-    # Step 3: Generate timestamped product name
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    product_name = f"IdeaReactor_{timestamp}"
-    print(f"[Product Name] {product_name}")
-
-    # Step 4: Generate content using Mistral
-    print("[Generating product description using Mistral]")
-    mistral_writer.generate_description(topic, product_name)
-
-    # Step 5: Determine dynamic price
-    print("[Running price engine]")
-    price = price_engine.calculate_price(score)
-    print(f"[Suggested Price] ${price:.2f}")
-
-    # Save price info
-    with open(f"products/{product_name}.json", "r+") as f:
-        product_data = json.load(f)
-        product_data['price'] = price
-        f.seek(0)
-        json.dump(product_data, f, indent=2)
-        f.truncate()
-
-    # Step 6: Build product package
-    subprocess.run(["python", "product_builder.py", product_name], check=True)
-
-    # Step 7: Upload to Shopify
+    product_name = topic.replace(" ", "_") + "_Product"
+    subprocess.run(["python", "mistral_writer.py", topic, product_name], check=True)
+    subprocess.run(["python", "price_engine.py", product_name], check=True)
     subprocess.run(["python", "shopify_uploader.py", product_name], check=True)
 
-    # Step 8: Optional Gumroad upload
-    try:
-        subprocess.run(["python", "gumroad_auto_upload.py", product_name], check=True)
-        print("[Gumroad Upload] Success")
-    except Exception as e:
-        print(f"[Gumroad Upload] Skipped or failed: {e}")
-
-    print("[DONE] All automation steps completed successfully.")
+    log(f"✅ Automation complete for: {product_name}")
 
 if __name__ == "__main__":
     main()
