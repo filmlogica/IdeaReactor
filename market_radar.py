@@ -6,7 +6,7 @@ import os
 
 load_dotenv()
 
-MISTRAL_URL = "http://localhost:11434/api/generate"
+requests.post(os.getenv("MISTRAL_API_URL"), json=payload)
 MISTRAL_MODEL = "mistral"
 
 def load_trends():
