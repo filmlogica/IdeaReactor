@@ -5,6 +5,7 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       playwright install
+      pip install --force-reinstall certifi
     startCommand: gunicorn kofi_webhook:app
     envVars:
       - key: KOFI_VERIFICATION_TOKEN
