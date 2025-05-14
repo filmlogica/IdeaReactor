@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import certifi
 from datetime import datetime
 
 # Load from environment
@@ -41,7 +42,7 @@ def upload_to_shopify(product_name, product_data):
         }
     }
 
-    response = requests.post(f"{BASE_URL}/products.json", json=payload)
+    response = requests.post(f"{BASE_URL}/products.json", json=payload, verify=certifi.where())
 
     if response.status_code != 201:
         log(f"❌ Failed to create product: {response.text}")
