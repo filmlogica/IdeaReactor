@@ -3,9 +3,6 @@ import json
 import os
 import sys
 
-# Load URL from env or use default Render server
-MISTRAL_API_URL = os.getenv("MISTRAL_API_URL", "https://mistral-api-server-p6ho.onrender.com/api/generate")
-
 def generate_description(topic, product_name):
     prompt = (
         f"Write a premium, SEO-optimized product description for a digital product called '{product_name}' "
