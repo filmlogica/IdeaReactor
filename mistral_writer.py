@@ -1,30 +1,45 @@
 import requests
 import json
+import os
 
-# Configure the local Mistral server (adjust if needed)
-MISTRAL_API_URL = "http://localhost:11434/api/generate"
+# Load URL from env or use default Render server
+MISTRAL_API_URL = os.getenv("MISTRAL_API_URL", "https://mistral-api-server-p6ho.onrender.com/api/generate")
 
-# Define the prompt you'd like Mistral to complete
-prompt = "Write a premium product description for a digital AI investing toolkit targeting high-net-worth individuals."
+def generate_description(topic, product_name):
+    prompt = (
+        f"Write a premium, SEO-optimized product description for a digital product called '{product_name}' "
+        f"based on the trending topic: {topic}. Target tech-savvy buyers interested in automation and AI."
+    )
 
-# Build the JSON payload
-payload = {
-    "model": "mistral",
-    "prompt": prompt,
-    "stream": False
-}
+    payload = {
+        "model": "mistral",
+        "prompt": prompt,
+        "stream": False
+    }
 
-print("🧠 [Mistral] Sending prompt...")
-try:
-    response = requests.post(MISTRAL_URL, json=payload)
-    response.raise_for_status()
-    result = response.json()
-    print("✅ [Mistral Response Received]")
-    print("-" * 60)
-    print(result.get("response", "[No response text found]"))
-    print("-" * 60)
-except requests.exceptions.RequestException as e:
-    print(f"❌ [Error] Could not connect to Mistral server: {e}")
-except json.JSONDecodeError:
-    print("❌ [Error] Invalid JSON response from Mistral.")
+    print("🧠 [Mistral] Sending prompt...")
+    try:
+        response = requests.post(MISTRAL_API_URL, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        description = result.get("response", "[No response]")
+        print("✅ [Mistral Response Received]")
+        print(description)
 
+        # Save description to product file
+        filepath = f"products/{product_name}.json"
+        if os.path.exists(filepath):
+            with open(filepath, "r+") as f:
+                data = json.load(f)
+                data["description"] = description
+                f.seek(0)
+                json.dump(data, f, indent=2)
+                f.truncate()
+        else:
+            with open(filepath, "w") as f:
+                json.dump({"title": product_name, "description": description}, f, indent=2)
+
+    except requests.exceptions.RequestException as e:
+        print(f"❌ [Error] Could not connect to Mistral server: {e}")
+    except json.JSONDecodeError:
+        print("❌ [Error] Invalid JSON response from Mistral.")
