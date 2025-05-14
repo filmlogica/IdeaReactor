@@ -18,7 +18,7 @@ def generate_with_mistral(prompt, temperature=0.7, max_tokens=300):
     }
 
     try:
-        response = requests.post(f"{MISTRAL_API_URL}, json=payload)
+        response = requests.post(f"{MISTRAL_API_URL}", json=payload)
         response.raise_for_status()
         return response.json().get("completion", "").strip()
     except requests.exceptions.RequestException as e:
