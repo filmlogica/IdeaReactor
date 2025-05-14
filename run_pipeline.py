@@ -16,7 +16,7 @@ def main():
     log("🧠 Starting IdeaReactor automation pipeline...")
 
     try:
-        subprocess.run(["python", "trend_scraper.py"], check=True)
+        subprocess.run(["python", "trends_scraper.py"], check=True)
         with open("trend.json", "r") as f:
             trend = json.load(f)
         topic = trend.get("topic", "AI Automation Tools")
