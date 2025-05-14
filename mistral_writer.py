@@ -15,6 +15,11 @@ def generate_description(topic, product_name):
         "stream": False
     }
 
+    MISTRAL_API_URL = os.getenv("MISTRAL_API_URL")
+    if not MISTRAL_API_URL:
+        print("❌ [Error] MISTRAL_API_URL environment variable not set.")
+        return
+
     print("🧠 [Mistral] Sending prompt...")
     try:
         response = requests.post(MISTRAL_API_URL, json=payload)
