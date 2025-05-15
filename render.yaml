@@ -29,7 +29,10 @@ buildCommand: |
   - type: worker
     name: ideareactor-worker
     runtime: python
-    buildCommand: pip install -r requirements.txt
+buildCommand: |
+  apt-get update && apt-get install -y ca-certificates
+  pip install --force-reinstall certifi
+  pip install -r requirements.txt      
     startCommand: python run_pipeline.py
     envVars:
       - key: GUMROAD_ACCESS_TOKEN
