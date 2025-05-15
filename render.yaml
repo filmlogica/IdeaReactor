@@ -3,6 +3,7 @@ services:
     name: ideareactor-web
     runtime: python
 buildCommand: |
+  apt-get update && apt-get install -y ca-certificates
   pip install --force-reinstall certifi
   poetry install
   playwright install  # only for the web service
