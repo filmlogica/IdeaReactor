@@ -42,7 +42,7 @@ def upload_to_shopify(product_name, product_data):
         }
     }
 
-    response = requests.post(f"{BASE_URL}/products.json", json=payload, verify=certifi.where())
+    response = requests.post(f"{BASE_URL}/products.json", json=payload, verify=False)
 
     if response.status_code != 201:
         log(f"❌ Failed to create product: {response.text}")
